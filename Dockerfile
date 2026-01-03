@@ -1,5 +1,5 @@
 # Sử dụng Java 21 base image
-FROM openjdk:21-jdk-slim
+FROM eclipse-temurin:21-jdk
 
 # Tạo thư mục làm việc
 WORKDIR /app
