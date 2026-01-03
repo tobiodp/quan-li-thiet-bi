@@ -1,11 +1,10 @@
-target/classes
-target/test-classes
-.mvn
-.mvnw
+target/
 .idea
 *.iml
 .git
 .gitignore
 README.md
 DEPLOY_DIRECT.md
+DEPLOY_DOCKER.md
+DEPLOY_RENDER_STEPS.md
 
