@@ -46,9 +46,9 @@ render deploy ResourcesManagement-0.0.1-SNAPSHOT.jar
 Trong Render Dashboard, thêm các biến môi trường:
 
 ```
-SPRING_DATASOURCE_URL=jdbc:mysql://mysql-148f4d0d-thungo3011-4212.f.aivencloud.com:23095/ResourcesManagement?ssl-mode=REQUIRED
-SPRING_DATASOURCE_USERNAME=avnadmin
-SPRING_DATASOURCE_PASSWORD=AVNS_mWVafZw-Dwx7aPpvAml
+SPRING_DATASOURCE_URL=jdbc:mysql://your-database-host:port/ResourcesManagement?ssl-mode=REQUIRED
+SPRING_DATASOURCE_USERNAME=your_username
+SPRING_DATASOURCE_PASSWORD=your_password
 SPRING_JPA_HIBERNATE_DDL_AUTO=update
 SERVER_PORT=10000
 APP_BASE_URL=https://your-app-name.onrender.com
