@@ -1,0 +1,11 @@
+target/classes
+target/test-classes
+.mvn
+.mvnw
+.idea
+*.iml
+.git
+.gitignore
+README.md
+DEPLOY_DIRECT.md
+

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lịch sử mượn/trả | Admin | NNT Software</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+
+<div class="d-flex" id="wrapper">
+
+  <!-- Sidebar -->
+  <div class="border-end" id="sidebar-wrapper">
+    <div class="sidebar-heading"><i class="fa-brands fa-nfc-symbol me-2"></i>NNT Software</div>
+    <div class="list-group list-group-flush">
+      <a href="/dashboardController" class="list-group-item list-group-item-action"><i class="fa-solid fa-house me-2"></i> Dashboard</a>
+      <a href="/viewDevices" class="list-group-item list-group-item-action active"><i class="fa-solid fa-laptop me-2"></i> Thiết bị</a>
+      <a href="/viewEmployees" class="list-group-item list-group-item-action"><i class="fa-solid fa-users me-2"></i> Nhân viên</a>
+      <a href="/viewDepartments" class="list-group-item list-group-item-action"><i class="fa-solid fa-building me-2"></i> Phòng ban</a>
+      <a href="/viewRequests" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+        <span><i class="fa-solid fa-clipboard-check me-2"></i> Yêu cầu</span>
+        <span class="badge bg-danger rounded-pill" th:text="${requestDeviceCount}">3</span>
+      </a>
+      <a href="/admin/borrowed-devices" class="list-group-item list-group-item-action">
+        <i class="fa-solid fa-rotate-left me-2"></i> Thiết bị đang mượn
+      </a>
+      <a href="/admin/notifications/send" class="list-group-item list-group-item-action">
+        <i class="fa-solid fa-bell me-2"></i> Gửi thông báo
+      </a>
+      <a href="/logout" class="list-group-item list-group-item-action mt-auto border-top border-white-50"><i class="fa-solid fa-right-from-bracket me-2"></i> Đăng xuất</a>
+    </div>
+  </div>
+
+  <div id="page-content-wrapper">
+
+    <nav class="navbar navbar-expand-lg navbar-light px-4 py-3 bg-white">
+      <div class="d-flex align-items-center">
+        <button class="btn btn-light border me-3" id="menu-toggle"><i class="fas fa-bars"></i></button>
+        <h4 class="m-0 fw-bold text-secondary">Lịch sử mượn/trả (Toàn hệ thống)</h4>
+      </div>
+      <div class="ms-auto d-flex align-items-center">
+        <span class="text-muted">Admin</span>
+      </div>
+    </nav>
+
+    <div class="container-fluid px-4 py-4">
+
+      <div th:if="${#lists.isEmpty(history)}" class="alert alert-info">
+        Chưa có bản ghi lịch sử nào.
+      </div>
+
+      <div th:unless="${#lists.isEmpty(history)}" class="card">
+        <div class="card-header bg-white py-3">
+          <div class="d-flex align-items-center justify-content-between">
+            <h6 class="m-0 fw-bold text-primary"><i class="fa-solid fa-list me-2"></i>Nhật ký thao tác</h6>
+            <a href="/viewRequests" class="btn btn-outline-secondary btn-sm">
+              <i class="fa-solid fa-arrow-left me-2"></i>Quay lại quản lý yêu cầu
+            </a>
+          </div>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead>
+              <tr>
+                <th class="ps-4">Thời gian</th>
+                <th>Hành động</th>
+                <th>Thiết bị</th>
+                <th>Loại</th>
+                <th>Người liên quan</th>
+                <th>Checklist / Tình trạng</th>
+                <th>Ghi chú</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr th:each="h : ${history}">
+                <td class="ps-4">
+                  <span class="text-muted" th:text="${h.actionDate}">2025-01-01T10:00</span>
+                </td>
+                <td>
+                  <span th:if="${h.action == 'Mượn'}" class="badge bg-success">
+                    <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> Mượn
+                  </span>
+                  <span th:if="${h.action == 'Trả'}" class="badge bg-warning text-dark">
+                    <i class="fa-solid fa-rotate-left me-1"></i> Trả
+                  </span>
+                  <span th:if="${h.action != 'Mượn' and h.action != 'Trả'}" class="badge bg-secondary" th:text="${h.action}">ACTION</span>
+                </td>
+                <td>
+                  <div class="fw-bold text-primary" th:text="${h.device != null ? h.device.deviceName : ''}">Device</div>
+                  <div class="small text-muted" th:text="${h.device != null ? ('#' + h.device.deviceId) : ''}">#1</div>
+                </td>
+                <td>
+                  <span class="badge bg-light text-dark border" th:text="${h.device != null ? h.device.deviceType : ''}">Laptop</span>
+                </td>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <div class="avatar-initial me-2" th:text="${h.user != null ? #strings.substring(h.user.username,0,1) : '?'}">U</div>
+                    <div>
+                      <div class="fw-bold" th:text="${h.user != null ? h.user.username : 'N/A'}">User</div>
+                      <div class="small text-muted" th:text="${h.user != null && h.user.role != null ? h.user.role : ''}">ROLE</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="text-secondary" th:text="${h.checklistResult}">Checklist</td>
+                <td class="text-secondary" th:text="${h.note}">Note</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  var el = document.getElementById("wrapper");
+  var toggleButton = document.getElementById("menu-toggle");
+
+  if (toggleButton) {
+    toggleButton.onclick = function () {
+      el.classList.toggle("toggled");
+    };
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản Lý Thiết Bị - NNT Software</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+
+<div class="d-flex" id="wrapper">
+  <!-- Sidebar -->
+  <div class="border-end" id="sidebar-wrapper">
+    <div class="sidebar-heading"><i class="fa-brands fa-nfc-symbol me-2"></i>NNT Software</div>
+    <div class="list-group list-group-flush">
+      <a href="/dashboardController" class="list-group-item list-group-item-action"><i class="fa-solid fa-house me-2"></i> Dashboard</a>
+      <a href="/viewDevices" class="list-group-item list-group-item-action active"><i class="fa-solid fa-laptop me-2"></i> Thiết bị</a>
+      <a href="/viewEmployees" class="list-group-item list-group-item-action"><i class="fa-solid fa-users me-2"></i> Nhân viên</a>
+      <a href="/viewDepartments" class="list-group-item list-group-item-action"><i class="fa-solid fa-building me-2"></i> Phòng ban</a>
+      <a href="/viewRequests" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+        <span><i class="fa-solid fa-clipboard-check me-2"></i> Yêu cầu</span>
+        <span class="badge bg-danger rounded-pill" th:text="${requestDeviceCount}">3</span>
+      </a>
+      <a href="/admin/borrowed-devices" class="list-group-item list-group-item-action">
+        <i class="fa-solid fa-rotate-left me-2"></i> Thiết bị đang mượn
+      </a>
+      <a href="/admin/notifications/send" class="list-group-item list-group-item-action">
+        <i class="fa-solid fa-bell me-2"></i> Gửi thông báo
+      </a>
+      <a href="/logout" class="list-group-item list-group-item-action mt-auto border-top border-white-50"><i class="fa-solid fa-right-from-bracket me-2"></i> Đăng xuất</a>
+    </div>
+  </div>
+
+  <div id="page-content-wrapper">
+    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom px-4 py-3">
+      <div class="d-flex align-items-center">
+        <button class="btn btn-light border me-3" id="menu-toggle"><i class="fas fa-bars"></i></button>
+        <h2 class="fs-4 m-0 text-secondary">Danh sách Thiết bị</h2>
+      </div>
+      <div class="ms-auto d-flex align-items-center">
+        <span class="me-2 text-muted">Xin chào, <strong>Admin</strong></span>
+        <img src="https://ui-avatars.com/api/?name=Admin&background=random" class="rounded-circle" width="32" height="32">
+      </div>
+    </nav>
+
+    <div class="container-fluid px-4 py-4">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <form th:action="@{/viewDevices}" method="get" class="d-flex" style="width: 400px;">
+          <div class="input-group">
+            <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-search text-muted"></i></span>
+            <input type="text" name="keyword" class="form-control border-start-0 ps-0" th:value="${keyword}" placeholder="Tìm thiết bị...">
+            <button class="btn btn-primary" type="submit">Tìm kiếm</button>
+          </div>
+          <a th:if="${keyword != null}" th:href="@{/viewDevices}" class="btn btn-outline-secondary ms-2"><i class="fa-solid fa-rotate-left"></i></a>
+        </form>
+        <a th:href="@{/devices/add}" class="btn btn-success"><i class="fa-solid fa-plus me-1"></i> Thêm thiết bị</a>
+      </div>
+
+      <div class="card border-0 shadow-sm" th:unless="${#lists.isEmpty(devices)}">
+        <div class="card-body p-0">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light">
+            <tr>
+              <th class="ps-4 py-3 border-0">Tên Thiết Bị</th>
+              <th class="py-3 border-0">Loại</th>
+              <th class="py-3 border-0">Ghi chú</th>
+              <th class="py-3 border-0">Người sử dụng</th>
+              <th class="py-3 border-0">Trạng thái</th>
+              <th class="py-3 border-0 text-end pe-4">Hành động</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="device : ${devices}">
+              <td class="ps-4 fw-semibold text-primary">
+                <i class="fa-solid fa-laptop me-2 text-muted"></i>
+                <span th:text="${device.name}">Macbook Pro</span>
+              </td>
+              <td><span class="badge bg-light text-dark border" th:text="${device.type}">Laptop</span></td>
+              <td class="text-muted small" th:text="${device.note != null ? device.note : '-'}"></td>
+              <td>
+                <div th:if="${device.assignedUser != null && device.assignedUser != 'Unassigned'}" class="d-flex align-items-center">
+                  <div class="rounded-circle bg-primary text-white d-flex justify-content-center align-items-center me-2" style="width: 24px; height: 24px; font-size: 0.7rem;">
+                    <span th:text="${#strings.substring(device.assignedUser,0,1)}">U</span>
+                  </div>
+                  <span th:text="${device.assignedUser}">User</span>
+                </div>
+                <span th:unless="${device.assignedUser != null && device.assignedUser != 'Unassigned'}" class="text-muted fst-italic small">-- Chưa cấp phát --</span>
+              </td>
+              <td>
+                <span th:if="${device.status == 'Sẵn sàng'}" class="badge bg-success bg-opacity-10 text-success">Sẵn sàng</span>
+                <span th:if="${device.status == 'Đang sử dụng'}" class="badge bg-primary bg-opacity-10 text-primary">Đang sử dụng</span>
+                <span th:if="${device.status == 'Bảo trì'}" class="badge bg-warning bg-opacity-10 text-warning">Bảo trì</span>
+                <span th:if="${device.status == 'Mất mát'}" class="badge bg-danger bg-opacity-10 text-danger"><i class="fa-solid fa-exclamation-triangle me-1"></i>Mất mát</span>
+                <span th:if="${device.status == 'Đã xóa'}" class="badge bg-secondary bg-opacity-10 text-secondary">Đã xóa</span>
+              </td>
+              <td class="text-end pe-4">
+                <a th:href="@{/devices/{id}/qr(id=${device.deviceId})}" class="btn btn-sm btn-outline-info border-0" title="Xem QR Code"><i class="fa-solid fa-qrcode"></i></a>
+                <a th:href="@{/devices/edit/{id}(id=${device.deviceId})}" class="btn btn-sm btn-outline-primary border-0" title="Chỉnh sửa"><i class="fa-solid fa-pen"></i></a>
+                <a th:href="@{/devices/delete/{id}(id=${device.deviceId})}" class="btn btn-sm btn-outline-danger border-0" title="Xóa" onclick="return confirm('Xóa thiết bị này?');"><i class="fa-solid fa-trash"></i></a>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Toggle Sidebar
+  var el = document.getElementById("wrapper");
+  var toggleButton = document.getElementById("menu-toggle");
+  if(toggleButton) {
+      toggleButton.onclick = function () {
+          el.classList.toggle("toggled");
+      };
+  }
+</script>
+</body>
+</html>

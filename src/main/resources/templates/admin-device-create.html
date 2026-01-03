@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thêm / Sửa Thiết Bị - NNT Software</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+
+<div class="d-flex" id="wrapper">
+  <!-- Sidebar -->
+  <div class="border-end" id="sidebar-wrapper">
+    <div class="sidebar-heading"><i class="fa-brands fa-nfc-symbol me-2"></i>NNT Software</div>
+    <div class="list-group list-group-flush">
+      <a href="/dashboardController" class="list-group-item list-group-item-action"><i class="fa-solid fa-house me-2"></i> Dashboard</a>
+      <a href="/viewDevices" class="list-group-item list-group-item-action active"><i class="fa-solid fa-laptop me-2"></i> Thiết bị</a>
+      <a href="/viewEmployees" class="list-group-item list-group-item-action"><i class="fa-solid fa-users me-2"></i> Nhân viên</a>
+      <a href="/viewDepartments" class="list-group-item list-group-item-action"><i class="fa-solid fa-building me-2"></i> Phòng ban</a>
+      <a href="/viewRequests" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+        <span><i class="fa-solid fa-clipboard-check me-2"></i> Yêu cầu</span>
+        <span class="badge bg-danger rounded-pill" th:text="${requestDeviceCount}">3</span>
+      </a>
+      <a href="/admin/borrowed-devices" class="list-group-item list-group-item-action">
+        <i class="fa-solid fa-rotate-left me-2"></i> Thiết bị đang mượn
+      </a>
+      <a href="/admin/notifications/send" class="list-group-item list-group-item-action">
+        <i class="fa-solid fa-bell me-2"></i> Gửi thông báo
+      </a>
+      <a href="/logout" class="list-group-item list-group-item-action mt-auto border-top border-white-50"><i class="fa-solid fa-right-from-bracket me-2"></i> Đăng xuất</a>
+    </div>
+  </div>
+
+  <div id="page-content-wrapper">
+    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom px-4 py-3">
+      <div class="d-flex align-items-center">
+        <button class="btn btn-light border me-3" id="menu-toggle"><i class="fas fa-bars"></i></button>
+        <h2 class="fs-4 m-0 text-secondary" th:text="${deviceId != null} ? 'Cập nhật thiết bị' : 'Thêm mới thiết bị'"></h2>
+      </div>
+      <div class="ms-auto d-flex align-items-center">
+        <span class="me-2 text-muted">Xin chào, <strong>Admin</strong></span>
+        <img src="https://ui-avatars.com/api/?name=Admin&background=random" class="rounded-circle" width="32" height="32">
+      </div>
+    </nav>
+
+    <div class="container-fluid px-4 py-4">
+      <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/viewDevices" class="text-decoration-none">Danh sách thiết bị</a></li>
+          <li class="breadcrumb-item active" aria-current="page" th:text="${deviceId != null} ? 'Cập nhật' : 'Thêm mới'"></li>
+        </ol>
+      </nav>
+
+      <div class="row justify-content-center">
+        <div class="col-xl-8 col-lg-10">
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-bottom-0">
+              <h5 class="mb-0 text-primary"><i class="fa-solid fa-circle-plus me-2"></i> Thông tin thiết bị</h5>
+            </div>
+            <div class="card-body p-4">
+              <form th:action="${deviceId != null} ? @{/devices/edit/{id}(id=${deviceId})} : @{/devices/add}" method="post" th:object="${deviceRequest}">
+                <div class="row g-4">
+                  <div class="col-md-6">
+                    <label class="form-label fw-semibold">Tên thiết bị <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" th:field="*{deviceName}" required>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label fw-semibold">Loại thiết bị <span class="text-danger">*</span></label>
+                    <select class="form-select" th:field="*{deviceType}" required>
+                      <option value="" disabled>-- Chọn loại --</option>
+                      <option value="laptop">Laptop</option>
+                      <option value="monitor">Monitor</option>
+                      <option value="phone">Phone</option>
+                      <option value="tablet">Tablet</option>
+                      <option value="accessory">Accessory</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label fw-semibold">Trạng thái</label>
+                    <select class="form-select" th:field="*{status}">
+                      <option value="">-- Chọn trạng thái (Mặc định: Sẵn sàng) --</option>
+                      <option value="Sẵn sàng" th:selected="${deviceId == null}">Sẵn sàng</option>
+                      <option value="Đang sử dụng">Đang sử dụng</option>
+                      <option value="Bảo trì">Bảo trì</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label fw-semibold">Đã kiểm tra?</label>
+                    <select class="form-select" th:field="*{isChecked}">
+                      <option value="true">Có</option>
+                      <option value="false">Không</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label fw-semibold">Checklist ID</label>
+                    <input type="number" class="form-control" th:field="*{checklistId}">
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label fw-semibold">Ghi chú</label>
+                    <textarea class="form-control" th:field="*{note}" rows="3"></textarea>
+                  </div>
+                </div>
+                <div class="d-flex justify-content-end mt-5 gap-2">
+                  <a href="/viewDevices" class="btn btn-light border px-4">Hủy</a>
+                  <button type="submit" class="btn btn-primary px-4" th:text="${deviceId != null} ? 'Cập nhật' : 'Lưu'"></button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Toggle Sidebar
+  var el = document.getElementById("wrapper");
+  var toggleButton = document.getElementById("menu-toggle");
+  if(toggleButton) {
+      toggleButton.onclick = function () {
+          el.classList.toggle("toggled");
+      };
+  }
+</script>
+</body>
+</html>
