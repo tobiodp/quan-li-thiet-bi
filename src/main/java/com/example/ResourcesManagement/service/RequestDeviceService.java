@@ -55,7 +55,7 @@ public class RequestDeviceService {
     }
 
     // --- 3. LOGIC DUYỆT & BÀN GIAO ---
-    @Transactional(rollbackFor = Exception.class)
+
     public void approveAndAssignDevice(Long requestId, Long selectedDeviceId,
                                        List<String> checkedItems, String adminNote) {
 
@@ -98,7 +98,7 @@ public class RequestDeviceService {
     }
 
     // --- 4. LOGIC TRẢ THIẾT BỊ (Thu hồi) ---
-    @Transactional(rollbackFor = Exception.class)
+
     public void returnDevice(Long requestId, List<String> checkedItems, String condition, String note) {
         // 1. Tìm lại yêu cầu mượn gốc
         RequestEntity request = requetsRepository.findById(requestId)
@@ -153,12 +153,25 @@ public class RequestDeviceService {
                 .build();
         deviceHistoryRepository.save(history);
 
-        // 7. Gửi thông báo
-        createNotification(request.getRequestingUser(), "Trả thiết bị thành công ✅",
-                "Bạn đã hoàn tất trả thiết bị: " + device.getDeviceName());
+        // 7. Gửi thông báo dựa trên tình trạng thiết bị
+        String notificationTitle;
+        String notificationMessage;
+        
+        if ("Mất mát".equals(condition)) {
+            notificationTitle = "Thiết bị đã được đánh dấu mất mát ⚠️";
+            notificationMessage = "Thiết bị: " + device.getDeviceName() + " đã được đánh dấu là mất mát. Vui lòng liên hệ ty  để xử lý.";
+        } else if ("Hư hỏng".equals(condition)) {
+            notificationTitle = "Trả thiết bị thành công ⚠️";
+            notificationMessage = "Bạn đã trả thiết bị: " + device.getDeviceName() + ". Thiết bị đã được chuyển sang trạng thái bảo trì do hư hỏng.";
+        } else {
+            // Tốt hoặc mặc định
+            notificationTitle = "Trả thiết bị thành công ✅";
+            notificationMessage = "Bạn đã hoàn tất trả thiết bị: " + device.getDeviceName();
+        }
+        
+        createNotification(request.getRequestingUser(), notificationTitle, notificationMessage);
     }
 
-    // --- CÁC HÀM TIỆN ÍCH KHÁC ---
 
     // Hàm tạo thông báo chung
     private void createNotification(UserEntity user, String title, String message) {
