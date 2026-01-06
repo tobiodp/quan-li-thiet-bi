@@ -11,8 +11,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import com.example.ResourcesManagement.repository.UserRepository;
 
 @Controller
 public class ViewLoginController {
@@ -28,6 +30,26 @@ public class ViewLoginController {
     
     @Autowired
     private NotificationService notificationService;
+    
+    @Autowired
+    private UserRepository userRepository;
+
+    // Model attribute để truyền số thông báo chưa đọc cho tất cả các trang user
+    @ModelAttribute("unreadNotificationCount")
+    public long getUnreadNotificationCount() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.isAuthenticated() && !auth.getName().equals("anonymousUser")) {
+                UserEntity currentUser = userRepository.findByUsername(auth.getName()).orElse(null);
+                if (currentUser != null) {
+                    return notificationService.countUnread(currentUser.getId());
+                }
+            }
+        } catch (Exception e) {
+            // Ignore errors
+        }
+        return 0;
+    }
 
     @GetMapping("/viewLogin")
     public String showLoginPage(Model model) {

@@ -60,15 +60,17 @@ public class ChapterService {
         ChapterEntity chapter = chapterRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Chapter not found"));
 
-
-
-        // Kiểm tra nếu có user nào thuộc chapter này thì không cho xóa
+        // Kiểm tra nếu có user nào thuộc chapter này
         List<UserEntity> users = userRepository.findByChapter(chapter);
         if (!users.isEmpty()) {
-            throw new RuntimeException("Cannot delete chapter with associated users");
+            // Set chapter = null cho tất cả user thuộc chapter này trước khi xóa
+            for (UserEntity user : users) {
+                user.setChapter(null);
+                userRepository.save(user);
+            }
         }
 
-
+        // Sau đó mới xóa chapter
         chapterRepository.delete(chapter);
     }
 

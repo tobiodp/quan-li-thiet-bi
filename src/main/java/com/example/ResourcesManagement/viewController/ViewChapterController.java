@@ -71,4 +71,11 @@ public class ViewChapterController {
         chapterService.deleteChapter(id);
         return "redirect:/viewDepartments";
     }
+    
+    // xóa chapter (endpoint với /chapters/delete để khớp với template)
+    @GetMapping("/chapters/delete/{id}")
+    public String deleteChapterWithS(@PathVariable Long id) {
+        chapterService.deleteChapter(id);
+        return "redirect:/viewDepartments";
+    }
 }

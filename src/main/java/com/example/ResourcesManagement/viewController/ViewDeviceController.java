@@ -8,14 +8,11 @@ import com.example.ResourcesManagement.service.QRCodeService;
 import com.example.ResourcesManagement.service.RequestDeviceService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.List;
 
 @Controller
@@ -32,69 +29,6 @@ public class ViewDeviceController {
     
     @Autowired
     private DeviceHistoryRepository deviceHistoryRepository;
-    
-    @Value("${server.port:8080}")
-    private String serverPort;
-    
-    @Value("${app.base-url:}")
-    private String baseUrl;
-    
-    /**
-     * Lấy địa chỉ server để tạo URL cho QR Code
-     * - Nếu có cấu hình base-url (production): dùng domain thực
-     * - Nếu không, tự động lấy từ request (domain thực khi deploy, IP khi local)
-     */
-    private String getServerAddress(HttpServletRequest request) {
-        // Nếu có cấu hình base-url (production), dùng nó
-        if (baseUrl != null && !baseUrl.isEmpty()) {
-            // Đảm bảo có https://
-            if (!baseUrl.startsWith("http://") && !baseUrl.startsWith("https://")) {
-                return "https://" + baseUrl;
-            }
-            return baseUrl;
-        }
-        
-        // Tự động lấy từ request (tự động detect domain khi deploy)
-        String scheme = request.getScheme(); // http hoặc https
-        String serverName = request.getServerName(); // domain hoặc IP
-        int serverPort = request.getServerPort();
-        
-        // Nếu là domain thực (không phải localhost/IP), dùng HTTPS và không cần port
-        if (!serverName.equals("localhost") && !serverName.startsWith("192.168.") 
-            && !serverName.startsWith("10.") && !serverName.startsWith("172.") 
-            && !serverName.equals("127.0.0.1")) {
-            // Production: dùng HTTPS, không cần port
-            return "https://" + serverName;
-        }
-        
-        // Local: dùng IP hoặc localhost
-        if (serverName.equals("localhost") || serverName.equals("127.0.0.1")) {
-            // Thử lấy IP thực của máy tính
-            try {
-                InetAddress localhost = InetAddress.getLocalHost();
-                String ip = localhost.getHostAddress();
-                
-                if (ip.equals("127.0.0.1") || ip.equals("0.0.0.0")) {
-                    InetAddress[] allAddresses = InetAddress.getAllByName(localhost.getHostName());
-                    for (InetAddress addr : allAddresses) {
-                        if (!addr.isLoopbackAddress() && !addr.isLinkLocalAddress()) {
-                            ip = addr.getHostAddress();
-                            break;
-                        }
-                    }
-                }
-                return "http://" + ip;
-            } catch (UnknownHostException e) {
-                return "http://localhost";
-            }
-        }
-        
-        // Trường hợp khác: dùng serverName từ request
-        if (serverPort == 80 || serverPort == 443) {
-            return scheme + "://" + serverName;
-        }
-        return scheme + "://" + serverName + ":" + serverPort;
-    }
 
     // --- 1. HIỂN THỊ DANH SÁCH & TÌM KIẾM ---
     @GetMapping("/viewDevices")
@@ -198,18 +132,12 @@ public class ViewDeviceController {
     public String showQRCode(@PathVariable Long id, Model model, HttpServletRequest request) {
         DeviceResponseDTO device = deviceService.getDeviceById(id);
         
-        // Lấy địa chỉ server (domain thực nếu production, IP nếu local)
-        String serverAddress = getServerAddress(request);
+        // Lấy địa chỉ server từ request (Render sẽ tự động có domain đúng)
+        String scheme = request.getScheme(); // https khi deploy lên Render
+        String serverName = request.getServerName(); // domain của Render
         
         // Tạo URL để quét QR Code
-        String qrUrl;
-        if (serverAddress.startsWith("https://")) {
-            // Production: dùng domain thực, không cần port
-            qrUrl = serverAddress + "/device/qr/" + id;
-        } else {
-            // Local: dùng IP + port
-            qrUrl = serverAddress + ":" + serverPort + "/device/qr/" + id;
-        }
+        String qrUrl = scheme + "://" + serverName + "/device/qr/" + id;
         
         // Tạo QR Code dưới dạng Base64
         String qrCodeBase64 = qrCodeService.generateQRCodeBase64(qrUrl, 400, 400);
@@ -217,7 +145,6 @@ public class ViewDeviceController {
         model.addAttribute("device", device);
         model.addAttribute("qrCodeBase64", qrCodeBase64);
         model.addAttribute("qrUrl", qrUrl);
-        model.addAttribute("serverAddress", serverAddress.replace("http://", "").replace("https://", "")); // Hiển thị để user biết
         
         return "admin-device-qr";
     }

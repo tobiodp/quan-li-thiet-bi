@@ -94,9 +94,13 @@ public class ViewUserRequestController {
 
         // 2. Gọi Service lấy dữ liệu THẬT từ DB
         List<NotificationResponseDTO> notifications = notificationService.getMyNotifications(currentUser.getId());
+        
+        // 3. Đếm số thông báo chưa đọc
+        long unreadCount = notificationService.countUnread(currentUser.getId());
 
-        // 3. Đẩy ra view
+        // 4. Đẩy ra view
         model.addAttribute("notifications", notifications);
+        model.addAttribute("unreadCount", unreadCount);
 
         return "user-notifications";
     }
@@ -114,5 +118,22 @@ public class ViewUserRequestController {
         
         // 3. Quay lại trang thông báo
         return "redirect:/user-notifications";
+    }
+    
+    // Model attribute để truyền số thông báo chưa đọc cho tất cả các trang user
+    @org.springframework.web.bind.annotation.ModelAttribute("unreadNotificationCount")
+    public long getUnreadNotificationCount() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.isAuthenticated() && !auth.getName().equals("anonymousUser")) {
+                UserEntity currentUser = userRepository.findByUsername(auth.getName()).orElse(null);
+                if (currentUser != null) {
+                    return notificationService.countUnread(currentUser.getId());
+                }
+            }
+        } catch (Exception e) {
+            // Ignore errors
+        }
+        return 0;
     }
 }

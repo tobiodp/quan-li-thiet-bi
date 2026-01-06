@@ -32,3 +32,4 @@
 Nếu hỏi về `rollbackFor`:
 **"rollbackFor = Exception.class nghĩa là rollback cho mọi exception, không chỉ RuntimeException."**
 
+

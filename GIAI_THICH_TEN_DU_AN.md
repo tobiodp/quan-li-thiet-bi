@@ -49,3 +49,4 @@ ResourcesManagement-0.0.1-SNAPSHOT.jar
 - **Tên tiếng Việt:** Hệ thống quản lý thiết bị / Quản lý tài nguyên
 - **Mô tả:** Hệ thống quản lý mượn/trả thiết bị công nghệ
 
+

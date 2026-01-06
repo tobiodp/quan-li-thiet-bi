@@ -26,8 +26,17 @@
         <i class="fa-solid fa-timeline me-2"></i> Lịch sử mượn/trả
       </a>
 
-      <a href="/user-notifications" class="list-group-item list-group-item-action">
-        <i class="fa-solid fa-bell me-2"></i> Thông báo
+      <a href="/user-notifications" class="list-group-item list-group-item-action position-relative">
+        <span class="position-relative me-2">
+          <i class="fa-solid fa-bell"></i>
+          <span th:if="${unreadNotificationCount > 0}" 
+                class="position-absolute top-0 start-100 badge rounded-pill bg-danger"
+                style="font-size: 0.65rem; padding: 0.2em 0.4em; min-width: 1.3em; text-align: center; transform: translate(-50%, -50%); line-height: 1;"
+                th:text="${unreadNotificationCount}">
+            0
+          </span>
+        </span>
+        Thông báo
       </a>
 
       <a href="/logout" class="list-group-item list-group-item-action mt-auto border-top border-white-50">
